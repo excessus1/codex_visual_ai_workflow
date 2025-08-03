@@ -39,7 +39,7 @@
     "@radix-ui/react-tooltip": "1.1.6",
     "@tailwindcss/oxide": "^4.1.11",
     "autoprefixer": "^10.4.20",
-    "better-sqlite3": "latest",
+    "better-sqlite3": "^12.2.0",
     "child_process": "latest",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
