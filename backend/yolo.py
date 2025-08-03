@@ -6,7 +6,7 @@ from ultralytics import YOLO
 from .utils import emit_status, set_status_callback
 
 
-def run_prediction(cfg, db=None):
+def run_prediction(cfg, db=None, batch: int = 1):
     model_path = cfg['model']
     source = cfg['source']
     output = cfg['output']
@@ -54,6 +54,7 @@ def run_prediction(cfg, db=None):
         name=name,
         device=0,
         stream=True,
+        batch=batch,
     )
 
     for r in results:
@@ -123,7 +124,7 @@ def run(config_path: str, mode_override: str | None = None, db=None) -> None:
         cfg["mode"] = mode_override
     mode = cfg.get("mode")
     if mode == "predict":
-        run_prediction(cfg, db=db)
+        run_prediction(cfg, db=db, batch=cfg.get('batch', 1))
     elif mode == "train":
         run_training(cfg, db=db)
     else:

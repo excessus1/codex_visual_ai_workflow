@@ -5,6 +5,7 @@
   "output": "/home/excessus/ai_projects/yolov8/outputs/predictions/trail_cam_v3/",
   "conf": 0.25,
   "save": true,
-  "save_txt": true
+  "save_txt": true,
+  "batch": 1
 }
 

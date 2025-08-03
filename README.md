@@ -23,3 +23,14 @@ The backend loads this file automatically using [`python-dotenv`](https://pypi.o
 When these variables are not provided, the application will fall back to the defaults above which are relative to the repository root.
 
 
+## Prediction Configuration
+
+Prediction jobs are driven by JSON configuration files. In addition to the existing keys (`mode`, `model`, `source`, `output`, and optional `conf`), the backend now supports a `batch` key:
+
+| Key     | Description                                                                 |
+|---------|-----------------------------------------------------------------------------|
+| `batch` | Number of images or video frames to process at once. Set `1` for per-image inference or increase to enable batched video processing. |
+
+Including `"batch": 1` in a config file enforces per-image inference. Larger values process multiple frames simultaneously during prediction.
+
+
