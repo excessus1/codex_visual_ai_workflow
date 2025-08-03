@@ -147,12 +147,5 @@ CREATE INDEX IF NOT EXISTS idx_system_metrics_type ON system_metrics(metric_type
 CREATE INDEX IF NOT EXISTS idx_system_metrics_timestamp ON system_metrics(timestamp);
 CREATE INDEX IF NOT EXISTS idx_file_operations_status ON file_operations(status);
 
--- Insert default data
-INSERT OR IGNORE INTO datasets (name, path, type, description) VALUES 
-('Sample Construction', '/data/construction_sample', 'yolo', 'Sample construction equipment dataset'),
-('Vehicle Detection', '/data/vehicles', 'yolo', 'Vehicle detection dataset'),
-('Safety Equipment', '/data/safety', 'yolo', 'Safety equipment detection dataset');
-
--- Insert sample activity log
-INSERT INTO activity_logs (action, details, status) VALUES 
-('Database initialized', '{"tables_created": 8, "indexes_created": 10}', 'success');
+-- Sample dataset and activity log inserts have been moved to 'site/scripts/seed_sample_data.sql'
+-- for optional development/demo seeding.
