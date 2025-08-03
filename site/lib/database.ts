@@ -1,12 +1,14 @@
+import fs from "fs"
 import path from "path"
+import { DATA_DIR } from "@/lib/paths"
 
 let db: ReturnType<typeof import("better-sqlite3")> | null = null
 
 function getDB() {
   if (!db) {
     const Database = require("better-sqlite3") as typeof import("better-sqlite3")
-    const dataDir = process.env.DATA_DIR || path.join(process.cwd(), "data")
-    const dbPath = process.env.DB_PATH || path.join(dataDir, "workflow.db")
+    fs.mkdirSync(DATA_DIR, { recursive: true })
+    const dbPath = process.env.DB_PATH ?? path.join(DATA_DIR, "workflow.db")
     db = new Database(dbPath)
 
     // Initialize schema

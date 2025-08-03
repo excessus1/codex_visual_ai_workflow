@@ -4,6 +4,7 @@ import path from "path"
 import fs from "fs/promises"
 import { WorkflowDatabase } from "@/lib/database"
 import { allowedScripts } from "@/config/scripts"
+import { DATA_DIR } from "@/lib/paths"
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,8 +18,7 @@ export async function POST(request: NextRequest) {
     // Create temporary config file if config is provided
     let configPath: string | null = null
     if (config) {
-      const dataDir = process.env.DATA_DIR || path.join(process.cwd(), "..", "data")
-      const configDir = path.join(dataDir, "temp", "configs")
+      const configDir = path.join(DATA_DIR, "temp", "configs")
       await fs.mkdir(configDir, { recursive: true })
       configPath = path.join(configDir, `config_${Date.now()}.json`)
       await fs.writeFile(configPath, JSON.stringify(config, null, 2))

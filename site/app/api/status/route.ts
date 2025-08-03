@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { spawn } from "child_process"
 import path from "path"
 import fs from "fs/promises"
+import { DATA_DIR } from "@/lib/paths"
 //import { WorkflowDatabase } from "@/lib/database"
 
 async function getActiveProcesses() {
@@ -80,8 +81,7 @@ async function getGPUStatus() {
 
 async function getStorageStatus() {
   try {
-    const dataDir = process.env.DATA_DIR || path.join(process.cwd(), "..", "data")
-    const stats = await fs.stat(dataDir)
+    const stats = await fs.stat(DATA_DIR)
     return {
       available: true,
       // Add more storage metrics as needed
@@ -93,8 +93,7 @@ async function getStorageStatus() {
 
 async function getRecentLogs() {
   try {
-    const dataDir = process.env.DATA_DIR || path.join(process.cwd(), "..", "data")
-    const logsDir = path.join(dataDir, "logs", "api")
+    const logsDir = path.join(DATA_DIR, "logs", "api")
     const files = await fs.readdir(logsDir)
     const recentFile = files.sort().pop()
 
