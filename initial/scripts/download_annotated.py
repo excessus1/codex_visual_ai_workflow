@@ -1,15 +1,18 @@
 # scripts/download_annotated.py
 
 import os
+import os
 import sys
 import json
-import shutil
 import logging
 from pathlib import Path
 from datetime import datetime
+from backend.download_annotated import download_annotated
+
 
 def ensure_dir(path):
     os.makedirs(path, exist_ok=True)
+
 
 def setup_logging(log_dir):
     ensure_dir(log_dir)
@@ -22,58 +25,6 @@ def setup_logging(log_dir):
         format='[%(levelname)s] %(message)s'
     )
     return log_path
-
-def copy_matching_images(labels_dir, images_dir, output_dir):
-    labels_dir = Path(labels_dir)
-    images_dir = Path(images_dir)
-    output_images = Path(output_dir) / "images"
-    output_labels = Path(output_dir) / "labels"
-
-    ensure_dir(output_images)
-    ensure_dir(output_labels)
-
-    label_files = list(labels_dir.glob("*.txt"))
-    count = 0
-    missing = 0
-    renamed = 0
-
-    for label_file in label_files:
-        original_stem = label_file.stem
-
-        # Handle Label Studio's UUID__basename.txt pattern
-        if "__" in original_stem:
-            _, base = original_stem.split("__", 1)
-        else:
-            base = original_stem
-
-        # Match base against actual image filenames
-        candidates = list(images_dir.glob(f"{base}.*"))
-        img_file = next((c for c in candidates if c.suffix.lower() in ['.jpg', '.jpeg']), None)
-
-        if img_file and img_file.exists():
-            # Match confirmed, rename label to match image basename
-            new_label_name = img_file.stem + ".txt"
-            new_label_path = output_labels / new_label_name
-
-            shutil.copy(img_file, output_images / img_file.name)
-            shutil.copy(label_file, new_label_path)
-
-            log_entry = f"[COPY] {img_file.name} and {new_label_name}"
-            if new_label_name != label_file.name:
-                renamed += 1
-                log_entry += f" (renamed from {label_file.name})"
-
-            logging.info(log_entry)
-            count += 1
-        else:
-            logging.warning(f"[MISSING] No image found for label {label_file.name}")
-            missing += 1
-
-    print(f"\n[INFO] Copied {count} matched image-label pairs.")
-    if renamed:
-        print(f"[INFO] Renamed {renamed} label files to match image filenames.")
-    if missing:
-        print(f"[INFO] {missing} label files did not have a matching image.")
 
 
 def main():
@@ -99,7 +50,8 @@ def main():
 
     log_path = setup_logging("logs/download")
     print(f"[INFO] Log written to {log_path}\n")
-    copy_matching_images(labels_dir, images_dir, output_dir)
+    download_annotated(cfg)
+
 
 if __name__ == "__main__":
     main()

@@ -3,12 +3,14 @@
 import sys
 import json
 from pathlib import Path
-import yaml
+from backend.generate_data_yaml import generate_data_yaml
 import logging
 from datetime import datetime
 
+
 def ensure_dir(path):
     Path(path).parent.mkdir(parents=True, exist_ok=True)
+
 
 def setup_logging(log_dir):
     Path(log_dir).mkdir(parents=True, exist_ok=True)
@@ -21,33 +23,6 @@ def setup_logging(log_dir):
         format='[%(levelname)s] %(message)s'
     )
     return log_path
-
-def generate_data_yaml(cfg):
-    classes_path = Path(cfg["classes_file"])
-    output_path = Path(cfg["output_file"])
-    train_path = Path(cfg["train_images"])
-    val_path = Path(cfg["val_images"])
-
-    if not classes_path.exists():
-        logging.error(f"Classes file not found: {classes_path}")
-        sys.exit(1)
-
-    with open(classes_path, "r") as f:
-        classes = [line.strip() for line in f if line.strip()]
-
-    data = {
-        "train": str(train_path.resolve()),
-        "val": str(val_path.resolve()),
-        "nc": len(classes),
-        "names": classes
-    }
-
-    ensure_dir(output_path)
-    with open(output_path, "w") as f:
-        yaml.dump(data, f, sort_keys=False)
-
-    logging.info(f"Wrote data.yaml with {len(classes)} classes to {output_path}")
-    print(f"[INFO] data.yaml created at: {output_path}")
 
 
 def main():
@@ -67,6 +42,7 @@ def main():
     print(f"[INFO] Log written to {log_path}\n")
 
     generate_data_yaml(cfg)
+
 
 if __name__ == "__main__":
     main()
