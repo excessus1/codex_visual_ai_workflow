@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { spawn } from "child_process"
 import path from "path"
 import fs from "fs/promises"
+import { WorkflowDatabase } from "@/lib/database"
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,9 +40,52 @@ export async function POST(request: NextRequest) {
       const process = spawn("python3", args)
       let stdout = ""
       let stderr = ""
+      let buffer = ""
+
+      // Insert initial database row based on action
+      let recordId: number | null = null
+      if (action === "train") {
+        recordId = WorkflowDatabase.createTrainingSession({
+          project_id: config?.project_id,
+          model_name: config?.model,
+          dataset_path: config?.data,
+          epochs: config?.epochs,
+          batch_size: config?.batch,
+          status: "running",
+        })
+      } else if (action === "predict") {
+        recordId = WorkflowDatabase.createPrediction({
+          project_id: config?.project_id,
+          model_name: config?.model,
+          source_path: config?.source,
+          output_path: config?.output,
+          confidence_threshold: config?.conf,
+          status: "running",
+        })
+      }
 
       process.stdout.on("data", (data) => {
-        stdout += data.toString()
+        const text = data.toString()
+        stdout += text
+        buffer += text
+
+        const lines = buffer.split(/\r?\n/)
+        buffer = lines.pop() || ""
+
+        for (const line of lines) {
+          if (action === "train" && recordId !== null) {
+            const match = line.match(/Epoch\s+(\d+)\/(\d+)/i)
+            if (match) {
+              const current = Number(match[1])
+              const total = Number(match[2])
+              const progress = (current / total) * 100
+              WorkflowDatabase.updateTrainingSession(recordId, {
+                progress,
+                metrics: line.trim(),
+              })
+            }
+          }
+        }
       })
 
       process.stderr.on("data", (data) => {
@@ -58,15 +102,22 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Log the action
-        await logAction({
+        if (action === "train" && recordId !== null) {
+          WorkflowDatabase.updateTrainingSession(recordId, {
+            status: code === 0 ? "completed" : "failed",
+            progress: 100,
+            completed_at: new Date().toISOString(),
+          })
+        } else if (action === "predict" && recordId !== null) {
+          WorkflowDatabase.updatePrediction(recordId, {
+            status: code === 0 ? "completed" : "failed",
+          })
+        }
+
+        WorkflowDatabase.logActivity({
           action,
-          script,
-          config,
-          exitCode: code,
-          stdout,
-          stderr,
-          timestamp: new Date().toISOString(),
+          details: JSON.stringify({ script, config }),
+          status: code === 0 ? "success" : "error",
         })
 
         resolve(
@@ -81,20 +132,11 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error("Script execution error:", error)
+    WorkflowDatabase.logActivity({
+      action: "script_error",
+      details: JSON.stringify({ error: String(error) }),
+      status: "error",
+    })
     return NextResponse.json({ error: "Script execution failed" }, { status: 500 })
-  }
-}
-
-async function logAction(logData: any) {
-  try {
-    const logsDir = path.join(process.cwd(), "logs", "api")
-    await fs.mkdir(logsDir, { recursive: true })
-
-    const logFile = path.join(logsDir, `actions_${new Date().toISOString().split("T")[0]}.log`)
-    const logEntry = JSON.stringify(logData) + "\n"
-
-    await fs.appendFile(logFile, logEntry)
-  } catch (error) {
-    console.error("Failed to log action:", error)
   }
 }
