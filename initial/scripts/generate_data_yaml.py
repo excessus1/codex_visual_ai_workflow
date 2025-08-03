@@ -1,5 +1,6 @@
 # scripts/generate_data_yaml.py
 
+import os
 import sys
 import json
 from pathlib import Path
@@ -38,7 +39,8 @@ def main():
     with open(config_path, "r") as f:
         cfg = json.load(f)
 
-    log_path = setup_logging("logs/data_yaml")
+    data_dir = Path(os.getenv("DATA_DIR", "."))
+    log_path = setup_logging(data_dir / "logs" / "data_yaml")
     print(f"[INFO] Log written to {log_path}\n")
 
     generate_data_yaml(cfg)

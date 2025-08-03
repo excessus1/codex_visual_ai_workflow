@@ -61,7 +61,8 @@ async function getGPUStatus() {
 
 async function getStorageStatus() {
   try {
-    const stats = await fs.stat(process.cwd())
+    const dataDir = process.env.DATA_DIR || path.join(process.cwd(), "..", "data")
+    const stats = await fs.stat(dataDir)
     return {
       available: true,
       // Add more storage metrics as needed
@@ -89,7 +90,8 @@ async function getActiveProcesses() {
 
 async function getRecentLogs() {
   try {
-    const logsDir = path.join(process.cwd(), "logs", "api")
+    const dataDir = process.env.DATA_DIR || path.join(process.cwd(), "..", "data")
+    const logsDir = path.join(dataDir, "logs", "api")
     const files = await fs.readdir(logsDir)
     const recentFile = files.sort().pop()
 

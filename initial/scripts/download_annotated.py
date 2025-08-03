@@ -1,7 +1,6 @@
 # scripts/download_annotated.py
 
 import os
-import os
 import sys
 import json
 import logging
@@ -48,7 +47,8 @@ def main():
         print("[ERROR] Config must include 'labels_dir', 'images_dir', and 'output_dir'.")
         sys.exit(1)
 
-    log_path = setup_logging("logs/download")
+    data_dir = Path(os.getenv("DATA_DIR", "."))
+    log_path = setup_logging(data_dir / "logs" / "download")
     print(f"[INFO] Log written to {log_path}\n")
     download_annotated(cfg)
 

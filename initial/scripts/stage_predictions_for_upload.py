@@ -1,14 +1,17 @@
 import sys
 import json
 import logging
+import os
+from pathlib import Path
 from datetime import datetime
 from backend.stage_predictions_for_upload import stage_predictions
 
+logs_dir = Path(os.getenv("DATA_DIR", ".")) / "logs" / "image_merge"
 logging.basicConfig(
     level=logging.INFO,
     format='[%(levelname)s] %(message)s',
     handlers=[
-        logging.FileHandler(f"logs/image_merge/stage_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"),
+        logging.FileHandler(logs_dir / f"stage_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"),
         logging.StreamHandler(),
     ]
 )
