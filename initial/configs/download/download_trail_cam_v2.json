@@ -1,5 +1,0 @@
-{
-  "labels_dir": "/home/excessus/ai_projects/yolov8/transfers/GCS_download/trail_cam_v2/LS_labels",
-  "images_dir": "/home/excessus/ai_projects/yolov8/transfers/GCS_download/trail_cam_v2/images",
-  "output_dir": "/home/excessus/ai_projects/yolov8/transfers/GCS_download/trail_cam_v2/matched"
-}

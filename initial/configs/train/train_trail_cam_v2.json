@@ -1,9 +1,0 @@
-{
-  "mode": "train",
-  "model": "/home/excessus/ai_projects/yolov8/models/yolov8n.pt",
-  "data": "/home/excessus/ai_projects/yolov8/datasets/training/trail_cam_v2/data.yaml",
-  "output": "/home/excessus/ai_projects/yolov8/outputs/training/trail_cam_v2",
-  "epochs": 100,
-  "batch": 16,
-  "imgsz": 640
-}

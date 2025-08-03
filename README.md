@@ -17,7 +17,7 @@ The backend loads this file automatically using [`python-dotenv`](https://pypi.o
 | Variable      | Description                               | Default               |
 |---------------|-------------------------------------------|-----------------------|
 | `DATA_DIR`    | Base directory for datasets and logs       | `./data`              |
-| `SCRIPTS_DIR` | Location of Python utility scripts         | `./initial/scripts`   |
+| `SCRIPTS_DIR` | Location of Python utility scripts         | `./backend`           |
 | `DB_PATH`     | Path to the workflow SQLite database file  | `./data/workflow.db`  |
 
 When these variables are not provided, the application will fall back to the defaults above which are relative to the repository root.

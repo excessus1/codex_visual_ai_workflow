@@ -1,6 +1,0 @@
-{
-  "local_path": "/home/excessus/ai_projects/yolov8/trail_cam_raw",
-  "gcs_path": "gs://excessus-home-labelstudio/datasets1",
-  "dry_run": false,
-  "delete_extras": false
-}
