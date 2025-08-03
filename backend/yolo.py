@@ -1,7 +1,6 @@
 import os
 import sys
 import json
-import subprocess
 from ultralytics import YOLO
 from .utils import emit_status, set_status_callback
 
