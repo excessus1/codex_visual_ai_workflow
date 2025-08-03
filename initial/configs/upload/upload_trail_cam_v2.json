@@ -1,0 +1,4 @@
+{
+  "local_path": "/home/excessus/ai_projects/yolov8/transfers/GCS_upload/trail_cam_v2/images",
+  "gcs_path": "gs://excessus-home-labelstudio/datasets1"
+}

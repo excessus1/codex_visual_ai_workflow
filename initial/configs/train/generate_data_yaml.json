@@ -1,0 +1,6 @@
+{
+  "classes_file": "/home/excessus/ai_projects/yolov8/datasets/training/trail_cam_v2/classes.txt",
+  "output_file": "/home/excessus/ai_projects/yolov8/datasets/training/trail_cam_v2/data.yaml",
+  "train_images": "/home/excessus/ai_projects/yolov8/datasets/training/trail_cam_v2/images",
+  "val_images": "/home/excessus/ai_projects/yolov8/datasets/training/trail_cam_v2/images"
+}

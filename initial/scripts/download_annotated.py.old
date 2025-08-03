@@ -1,0 +1,89 @@
+# scripts/download_annotated.py
+
+import os
+import sys
+import json
+import shutil
+import logging
+from pathlib import Path
+from datetime import datetime
+
+def ensure_dir(path):
+    os.makedirs(path, exist_ok=True)
+
+def setup_logging(log_dir):
+    ensure_dir(log_dir)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_path = Path(log_dir) / f"download_annotated_{timestamp}.log"
+    logging.basicConfig(
+        filename=log_path,
+        filemode='w',
+        level=logging.INFO,
+        format='[%(levelname)s] %(message)s'
+    )
+    return log_path
+
+def copy_matching_images(labels_dir, images_dir, output_dir):
+    labels_dir = Path(labels_dir)
+    images_dir = Path(images_dir)
+    output_images = Path(output_dir) / "images"
+    output_labels = Path(output_dir) / "labels"
+
+    ensure_dir(output_images)
+    ensure_dir(output_labels)
+
+    label_files = list(labels_dir.glob("*.txt"))
+    count = 0
+    missing = 0
+
+    for label_file in label_files:
+        base = label_file.stem
+
+        # New logic: handle Label Studio UUID__filename pattern
+        if "__" in base:
+            _, base = base.split("__", 1)
+
+        candidates = list(images_dir.glob(f"{base}.*"))
+        img_file = next((c for c in candidates if c.suffix.lower() in ['.jpg', '.jpeg']), None)
+
+        if img_file and img_file.exists():
+            shutil.copy(img_file, output_images / img_file.name)
+            shutil.copy(label_file, output_labels / label_file.name)
+            logging.info(f"[COPY] {img_file.name} and {label_file.name}")
+            count += 1
+        else:
+            logging.warning(f"[MISSING] No image found for label {label_file.name}")
+            missing += 1
+
+    print(f"\n[INFO] Copied {count} matched image-label pairs.")
+    if missing:
+        print(f"[INFO] {missing} label files did not have a matching image.")
+
+
+def main():
+    if len(sys.argv) != 2:
+        print("Usage: python3 download_annotated.py <config_file.json>")
+        sys.exit(1)
+
+    config_path = sys.argv[1]
+    if not os.path.isfile(config_path):
+        print(f"[ERROR] Config file not found: {config_path}")
+        sys.exit(1)
+
+    with open(config_path, "r") as f:
+        cfg = json.load(f)
+
+    labels_dir = cfg.get("labels_dir")
+    images_dir = cfg.get("images_dir")
+    output_dir = cfg.get("output_dir")
+
+    if not all([labels_dir, images_dir, output_dir]):
+        print("[ERROR] Config must include 'labels_dir', 'images_dir', and 'output_dir'.")
+        sys.exit(1)
+
+    log_path = setup_logging("logs/download")
+    print(f"[INFO] Log written to {log_path}\n")
+    copy_matching_images(labels_dir, images_dir, output_dir)
+
+if __name__ == "__main__":
+    main()

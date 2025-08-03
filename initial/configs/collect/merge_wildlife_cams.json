@@ -1,0 +1,12 @@
+{
+  "sources": [
+    "/mnt/HA_VM/Video_Analysis/Trail_Cameras/New/100MEDIA/",
+    "/mnt/HA_VM/Video_Analysis/Trail_Cameras/New/101MEDIA/",
+    "/mnt/HA_VM/Video_Analysis/Trail_Cameras/New/"
+  ],
+  "destination": "/home/excessus/ai_projects/yolov8/trail_cam_raw",
+  "rename_scheme": "sequential",
+  "rename_only_on_conflict": true,
+  "delete_missing_in_sources": true,
+  "extensions": [".JPG", ".jpg", ".jpeg"]
+}

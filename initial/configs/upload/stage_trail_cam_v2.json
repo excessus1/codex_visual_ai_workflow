@@ -1,0 +1,4 @@
+{
+  "prediction_dir": "/home/excessus/ai_projects/yolov8/outputs/predictions/trail_cam_v2/predict2",
+  "destination": "/home/excessus/ai_projects/yolov8/transfers/GCS_upload/trail_cam_v2"
+}
