@@ -1,5 +1,10 @@
 """Backend package for reusable workflow functions."""
 
+from dotenv import load_dotenv
+
+# Load environment variables from a .env file before importing other modules.
+load_dotenv()
+
 from .yolo import run_prediction, run_training
 from .collect_images import collect_images, setup_logger as setup_collect_logger
 from .convert_yolo_to_ls import convert_yolo_to_ls
