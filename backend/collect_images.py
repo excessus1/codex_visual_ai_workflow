@@ -1,4 +1,6 @@
 import os
+import sys
+import json
 import shutil
 import logging
 from pathlib import Path
@@ -115,3 +117,40 @@ def collect_images(cfg):
         'renamed': renamed,
         'skipped': skipped,
     }
+
+
+def run(config_path: str) -> None:
+    """Entry point used by CLI and other callers.
+
+    Loads the JSON config, sets up logging, and invokes :func:`collect_images`.
+    """
+    with open(config_path, "r") as f:
+        cfg = json.load(f)
+
+    data_dir = Path(os.getenv("DATA_DIR", "."))
+    log_dir = data_dir / "logs" / "image_merge"
+    log_path = setup_logger(log_dir)
+
+    logging.info("=== Starting Image Collection ===")
+    logging.info(f"Config: {config_path}")
+    logging.info(f"Sources: {cfg['sources']}")
+    logging.info(f"Destination: {cfg['destination']}")
+    logging.info(f"Rename scheme: {cfg.get('rename_scheme', 'source_prefix')}")
+    logging.info(f"Delete missing in sources: {cfg.get('delete_missing_in_sources', False)}")
+
+    collect_images(cfg)
+
+    logging.info("=== Collection Complete ===")
+    print(f"[INFO] Log written to {log_path}")
+
+
+def main(argv: list[str] | None = None) -> None:
+    argv = argv or sys.argv[1:]
+    if len(argv) != 1:
+        print("Usage: python -m backend.collect_images <config.json>")
+        sys.exit(1)
+    run(argv[0])
+
+
+if __name__ == "__main__":
+    main()

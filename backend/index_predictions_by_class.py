@@ -1,5 +1,7 @@
 import os
 import json
+import os
+import sys
 from glob import glob
 from .utils import emit_status
 
@@ -62,3 +64,21 @@ def index_predictions(cfg):
 
     emit_status('complete', action='index_predictions', entries=len(index), output=output_path)
     return index
+
+
+def run(config_path: str) -> None:
+    with open(config_path, "r") as f:
+        cfg = json.load(f)
+    index_predictions(cfg)
+
+
+def main(argv: list[str] | None = None) -> None:
+    argv = argv or sys.argv[1:]
+    if len(argv) != 1:
+        print("Usage: python -m backend.index_predictions_by_class <config.json>")
+        sys.exit(1)
+    run(argv[0])
+
+
+if __name__ == "__main__":
+    main()

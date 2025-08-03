@@ -1,7 +1,11 @@
 import json
+import os
+import sys
+import json
 from pathlib import Path
 import yaml
 import logging
+from datetime import datetime
 from .utils import emit_status
 
 
@@ -38,3 +42,40 @@ def generate_data_yaml(cfg):
 
     emit_status('complete', action='generate_data_yaml', classes=len(classes), output=str(output_path))
     return data
+
+
+def setup_logging(log_dir: Path) -> Path:
+    """Configure logging and return the log file path."""
+    Path(log_dir).mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_path = Path(log_dir) / f"generate_data_yaml_{timestamp}.log"
+    logging.basicConfig(
+        filename=log_path,
+        filemode="w",
+        level=logging.INFO,
+        format='[%(levelname)s] %(message)s',
+    )
+    return log_path
+
+
+def run(config_path: str) -> None:
+    """Load config and generate a data.yaml file."""
+    with open(config_path, "r") as f:
+        cfg = json.load(f)
+
+    data_dir = Path(os.getenv("DATA_DIR", "."))
+    log_path = setup_logging(data_dir / "logs" / "data_yaml")
+    print(f"[INFO] Log written to {log_path}\n")
+    generate_data_yaml(cfg)
+
+
+def main(argv: list[str] | None = None) -> None:
+    argv = argv or sys.argv[1:]
+    if len(argv) != 1:
+        print("Usage: python -m backend.generate_data_yaml <config.json>")
+        sys.exit(1)
+    run(argv[0])
+
+
+if __name__ == "__main__":
+    main()
