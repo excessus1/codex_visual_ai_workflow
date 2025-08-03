@@ -1,7 +1,0 @@
-{
-  "labels_dir": "/home/excessus/ai_projects/yolov8/transfers/GCS_upload/trail_cam_v2/labels",
-  "image_dir": "/home/excessus/ai_projects/yolov8/transfers/GCS_upload/trail_cam_v2/images",
-  "classes_file": "/home/excessus/ai_projects/yolov8/datasets/training/trail_cam_v1/classes.txt",
-  "output_file": "/home/excessus/ai_projects/yolov8/transfers/GCS_upload/trail_cam_v2/labelstudio_tasks.json",
-  "image_prefix": "gs://excessus-home-labelstudio/datasets1/"
-}

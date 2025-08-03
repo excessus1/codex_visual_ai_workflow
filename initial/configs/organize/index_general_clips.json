@@ -1,6 +1,0 @@
-{
-  "source_dir": "/home/excessus/ai_projects/yolov8/outputs/predictions/blink_v1",
-  "output_json": "/home/excessus/ai_projects/yolov8/outputs/index_blink_v1.json",
-  "class_map": "/home/excessus/ai_projects/yolov8/models/trail_cam_v2_class_map.json",
-  "filter_class": ""
-}
