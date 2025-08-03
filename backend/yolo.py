@@ -1,4 +1,6 @@
 import os
+import sys
+import json
 import subprocess
 from ultralytics import YOLO
 from .utils import emit_status
@@ -61,3 +63,29 @@ def run_training(cfg):
     model.train(data=data_yaml, epochs=epochs, batch=batch, imgsz=imgsz, project=project, name=name, save=True, plots=True)
 
     emit_status('complete', action='train')
+
+
+def run(config_path: str, mode_override: str | None = None) -> None:
+    with open(config_path, "r") as f:
+        cfg = json.load(f)
+    if mode_override:
+        cfg["mode"] = mode_override
+    mode = cfg.get("mode")
+    if mode == "predict":
+        run_prediction(cfg)
+    elif mode == "train":
+        run_training(cfg)
+    else:
+        raise ValueError("'mode' must be either 'predict' or 'train'")
+
+
+def main(argv: list[str] | None = None, mode_override: str | None = None) -> None:
+    argv = argv or sys.argv[1:]
+    if len(argv) != 1:
+        print("Usage: python -m backend.yolo <config.json>")
+        sys.exit(1)
+    run(argv[0], mode_override=mode_override)
+
+
+if __name__ == "__main__":
+    main()

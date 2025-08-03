@@ -1,11 +1,15 @@
 import shutil
 import logging
+import os
+import sys
+import json
+import logging
 from pathlib import Path
+from datetime import datetime
 from .utils import emit_status
 
 
 def load_config(path):
-    import json
     with open(path, 'r') as f:
         return json.load(f)
 
@@ -44,3 +48,35 @@ def stage_predictions(cfg):
 
     emit_status('complete', action='stage_predictions', staged=count, skipped=skipped)
     return {'staged': count, 'skipped': skipped}
+
+
+def setup_logging(log_dir: Path) -> Path:
+    Path(log_dir).mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_path = Path(log_dir) / f"stage_predictions_{timestamp}.log"
+    logging.basicConfig(
+        filename=log_path,
+        level=logging.INFO,
+        format='[%(levelname)s] %(message)s',
+    )
+    return log_path
+
+
+def run(config_path: str) -> None:
+    cfg = load_config(config_path)
+    data_dir = Path(os.getenv("DATA_DIR", "."))
+    log_path = setup_logging(data_dir / "logs" / "image_merge")
+    print(f"[INFO] Log written to {log_path}")
+    stage_predictions(cfg)
+
+
+def main(argv: list[str] | None = None) -> None:
+    argv = argv or sys.argv[1:]
+    if len(argv) != 1:
+        print("Usage: python -m backend.stage_predictions_for_upload <config.json>")
+        sys.exit(1)
+    run(argv[0])
+
+
+if __name__ == "__main__":
+    main()

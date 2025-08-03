@@ -14,9 +14,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid script name" }, { status: 400 })
     }
 
-    const scriptsDir = process.env.SCRIPTS_DIR || path.join(process.cwd(), "..", "initial", "scripts")
-    const scriptPath = path.join(scriptsDir, script)
-
     // Create temporary config file if config is provided
     let configPath: string | null = null
     if (config) {
@@ -28,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Prepare command arguments
-    const args = configPath ? [scriptPath, configPath] : [scriptPath]
+    const args = configPath ? ["-m", script, configPath] : ["-m", script]
 
     let child
     try {

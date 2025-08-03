@@ -1,5 +1,8 @@
 import json
 import logging
+import json
+import logging
+import sys
 from pathlib import Path
 from .utils import emit_status
 
@@ -77,3 +80,22 @@ def convert_yolo_to_ls(cfg):
 
     emit_status('complete', action='convert_yolo_to_ls', tasks=len(tasks), output=str(output_file))
     return tasks
+
+
+def run(config_path: str) -> None:
+    """Load config from ``config_path`` and perform conversion."""
+    with open(config_path, "r") as f:
+        cfg = json.load(f)
+    convert_yolo_to_ls(cfg)
+
+
+def main(argv: list[str] | None = None) -> None:
+    argv = argv or sys.argv[1:]
+    if len(argv) != 1:
+        print("Usage: python -m backend.convert_yolo_to_ls <config.json>")
+        sys.exit(1)
+    run(argv[0])
+
+
+if __name__ == "__main__":
+    main()
