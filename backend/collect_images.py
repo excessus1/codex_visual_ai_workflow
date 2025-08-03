@@ -6,11 +6,7 @@ import logging
 from pathlib import Path
 from datetime import datetime
 from filecmp import cmp
-from .utils import emit_status, set_status_callback
-
-
-def ensure_dir(path):
-    os.makedirs(path, exist_ok=True)
+from .utils import emit_status, set_status_callback, ensure_dir
 
 
 def setup_logger(log_dir: Path):

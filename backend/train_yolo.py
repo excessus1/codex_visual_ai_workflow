@@ -2,11 +2,7 @@ import os
 import json
 from ultralytics import YOLO
 import yaml
-from .utils import emit_status
-
-
-def ensure_dir(path):
-    os.makedirs(path, exist_ok=True)
+from .utils import emit_status, ensure_dir
 
 
 def run_training(cfg):
