@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,28 +13,71 @@ import { Play, ArrowLeft, Settings, Database } from "lucide-react"
 import Link from "next/link"
 
 export default function NewTraining() {
-  const [isTraining, setIsTraining] = useState(false)
   const [progress, setProgress] = useState(0)
   const [epochs, setEpochs] = useState([100])
   const [batchSize, setBatchSize] = useState([16])
   const [imageSize, setImageSize] = useState([640])
+  const [status, setStatus] = useState<"idle" | "running" | "completed" | "failed">(
+    "idle",
+  )
+  const pollRef = useRef<NodeJS.Timeout | null>(null)
 
   const handleStartTraining = async () => {
-    setIsTraining(true)
+    setStatus("running")
     setProgress(0)
 
-    // Simulate training progress
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval)
-          setIsTraining(false)
-          return 100
+    const config = {
+      mode: "train",
+      model: "yolov8n.pt",
+      data: "/path/to/data.yaml",
+      output: "/tmp/output",
+      epochs: epochs[0],
+      batch: batchSize[0],
+      imgsz: imageSize[0],
+    }
+
+    pollRef.current = setInterval(async () => {
+      try {
+        const res = await fetch("/api/status")
+        const data = await res.json()
+        const session = data.processes?.[0]
+        if (session) {
+          setProgress(session.progress || 0)
+          if (session.status === "completed" || session.status === "failed") {
+            clearInterval(pollRef.current as NodeJS.Timeout)
+            setStatus(session.status === "completed" ? "completed" : "failed")
+          }
         }
-        return prev + 2
-      })
+      } catch (e) {
+        clearInterval(pollRef.current as NodeJS.Timeout)
+        setStatus("failed")
+      }
     }, 1000)
+
+    try {
+      const res = await fetch("/api/scripts", {
+        method: "POST",
+        body: JSON.stringify({ script: "run_yolo.py", action: "train", config }),
+      })
+      const result = await res.json()
+      if (!res.ok || !result.success) {
+        setStatus("failed")
+      } else {
+        setStatus("completed")
+        setProgress(100)
+      }
+    } catch (error) {
+      setStatus("failed")
+    } finally {
+      if (pollRef.current) clearInterval(pollRef.current)
+    }
   }
+
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current)
+    }
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -179,7 +222,7 @@ export default function NewTraining() {
                 <CardTitle>Training Status</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {isTraining ? (
+                {status === "running" ? (
                   <div className="space-y-4">
                     <div className="flex justify-between text-sm">
                       <span>Training in progress...</span>
@@ -202,6 +245,16 @@ export default function NewTraining() {
                       Training Active
                     </Badge>
                   </div>
+                ) : status === "completed" ? (
+                  <div className="space-y-3">
+                    <Badge variant="outline" className="bg-green-50 text-green-700">
+                      Training Complete
+                    </Badge>
+                  </div>
+                ) : status === "failed" ? (
+                  <div className="space-y-3">
+                    <Badge variant="destructive">Training Failed</Badge>
+                  </div>
                 ) : (
                   <div className="space-y-3">
                     <Badge variant="outline" className="bg-green-50 text-green-700">
@@ -214,10 +267,10 @@ export default function NewTraining() {
                 <Button
                   className="w-full bg-purple-600 hover:bg-purple-700"
                   onClick={handleStartTraining}
-                  disabled={isTraining}
+                  disabled={status === "running"}
                 >
                   <Play className="h-4 w-4 mr-2" />
-                  {isTraining ? "Training..." : "Start Training"}
+                  {status === "running" ? "Training..." : "Start Training"}
                 </Button>
               </CardContent>
             </Card>

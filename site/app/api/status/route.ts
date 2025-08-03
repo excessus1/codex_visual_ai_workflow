@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { spawn } from "child_process"
 import path from "path"
 import fs from "fs/promises"
+import { WorkflowDatabase } from "@/lib/database"
 
 export async function GET() {
   try {
@@ -71,8 +72,19 @@ async function getStorageStatus() {
 }
 
 async function getActiveProcesses() {
-  // Check for active training/prediction processes
-  return []
+  try {
+    const sessions = WorkflowDatabase.getTrainingSessions()
+      .sort((a, b) => (b.id || 0) - (a.id || 0))
+    return sessions.map((s) => ({
+      id: s.id,
+      type: "train",
+      status: s.status,
+      progress: s.progress,
+      metrics: s.metrics,
+    }))
+  } catch {
+    return []
+  }
 }
 
 async function getRecentLogs() {
