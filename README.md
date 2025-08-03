@@ -12,6 +12,7 @@ Integration with cloud services is supported for annotation, along side full loc
 ## Environment Variables
 
 Configuration relies on a few environment variables which can be set in a `.env` file at the project root.
+The backend loads this file automatically using [`python-dotenv`](https://pypi.org/project/python-dotenv/).
 
 | Variable      | Description                               | Default               |
 |---------------|-------------------------------------------|-----------------------|
