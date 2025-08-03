@@ -1,16 +1,11 @@
 import json
 import os
 import sys
-import json
 from pathlib import Path
 import yaml
 import logging
 from datetime import datetime
-from .utils import emit_status
-
-
-def ensure_dir(path):
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
+from .utils import emit_status, ensure_dir
 
 
 def generate_data_yaml(cfg):
@@ -36,7 +31,7 @@ def generate_data_yaml(cfg):
         "names": classes,
     }
 
-    ensure_dir(output_path)
+    ensure_dir(output_path.parent)
     with open(output_path, "w") as f:
         yaml.dump(data, f, sort_keys=False)
 

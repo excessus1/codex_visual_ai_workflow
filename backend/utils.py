@@ -1,8 +1,14 @@
 import json
 import sys
+from pathlib import Path
 from typing import Any, Callable, Optional
 
 _status_callback: Optional[Callable[[str, dict], None]] = None
+
+
+def ensure_dir(path: str | Path) -> None:
+    """Create a directory and its parents if they do not exist."""
+    Path(path).mkdir(parents=True, exist_ok=True)
 
 
 def set_status_callback(cb: Optional[Callable[[str, dict], None]]) -> None:
