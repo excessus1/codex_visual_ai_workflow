@@ -2,7 +2,26 @@ import { NextResponse } from "next/server"
 import { spawn } from "child_process"
 import path from "path"
 import fs from "fs/promises"
-import { WorkflowDatabase } from "@/lib/database"
+//import { WorkflowDatabase } from "@/lib/database"
+
+async function getActiveProcesses() {
+  try {
+    const { WorkflowDatabase } = require("@/lib/database")
+    const sessions = WorkflowDatabase.getTrainingSessions()
+      .sort((a, b) => (b.id || 0) - (a.id || 0))
+    return sessions.map((s) => ({
+      id: s.id,
+      type: "train",
+      status: s.status,
+      progress: s.progress,
+      metrics: s.metrics,
+    }))
+  } catch (err) {
+    console.error("Failed to get active processes:", err)
+    return []
+  }
+}
+
 
 export async function GET() {
   try {
@@ -69,22 +88,6 @@ async function getStorageStatus() {
     }
   } catch {
     return { available: false }
-  }
-}
-
-async function getActiveProcesses() {
-  try {
-    const sessions = WorkflowDatabase.getTrainingSessions()
-      .sort((a, b) => (b.id || 0) - (a.id || 0))
-    return sessions.map((s) => ({
-      id: s.id,
-      type: "train",
-      status: s.status,
-      progress: s.progress,
-      metrics: s.metrics,
-    }))
-  } catch {
-    return []
   }
 }
 
