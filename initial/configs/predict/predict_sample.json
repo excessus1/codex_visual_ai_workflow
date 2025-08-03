@@ -3,6 +3,7 @@
   "model": "/home/excessus/ai_projects/yolov8/models/trail_cam_v1_best.pt",
   "source": "/home/excessus/ai_projects/yolov8/trail_cam_raw/",
   "output": "/home/excessus/ai_projects/yolov8/outputs/predictions/trail_cam_v2/",
-  "conf": 0.25
+  "conf": 0.25,
+  "batch": 1
 }
 
