@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,11 +11,37 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { FolderOpen, Plus, Trash2, ArrowLeft, Upload } from "lucide-react"
 import Link from "next/link"
+import { formatDistanceToNow } from "date-fns"
+
+interface Dataset {
+  id: number
+  name: string
+  image_count: number
+  created_at: string
+}
 
 export default function CollectImages() {
-  const [sources, setSources] = useState(["/path/to/source1", "/path/to/source2"])
+  const [sources, setSources] = useState<string[]>([""])
   const [isRunning, setIsRunning] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [datasets, setDatasets] = useState<Dataset[]>([])
+  const [isLoadingDatasets, setIsLoadingDatasets] = useState(true)
+
+  useEffect(() => {
+    const fetchDatasets = async () => {
+      setIsLoadingDatasets(true)
+      try {
+        const res = await fetch("/api/datasets")
+        const data: Dataset[] = await res.json()
+        setDatasets(data)
+      } catch (err) {
+        console.error("Failed to fetch datasets:", err)
+      } finally {
+        setIsLoadingDatasets(false)
+      }
+    }
+    fetchDatasets()
+  }, [])
 
   const addSource = () => {
     setSources([...sources, ""])
@@ -195,21 +221,28 @@ export default function CollectImages() {
                 <CardTitle>Recent Collections</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {[
-                    { name: "construction_images", count: 247, time: "2 hours ago" },
-                    { name: "vehicle_dataset", count: 156, time: "1 day ago" },
-                    { name: "safety_equipment", count: 89, time: "3 days ago" },
-                  ].map((item, index) => (
-                    <div key={index} className="flex justify-between items-center p-3 rounded-lg bg-slate-50">
-                      <div>
-                        <p className="font-medium">{item.name}</p>
-                        <p className="text-sm text-muted-foreground">{item.count} images</p>
+                {isLoadingDatasets ? (
+                  <div className="text-center py-4 text-muted-foreground">Loading...</div>
+                ) : datasets.length === 0 ? (
+                  <div className="text-center py-4 text-muted-foreground">No collections yet</div>
+                ) : (
+                  <div className="space-y-3">
+                    {datasets.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex justify-between items-center p-3 rounded-lg bg-slate-50"
+                      >
+                        <div>
+                          <p className="font-medium">{item.name}</p>
+                          <p className="text-sm text-muted-foreground">{item.image_count} images</p>
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+                        </span>
                       </div>
-                      <span className="text-sm text-muted-foreground">{item.time}</span>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
