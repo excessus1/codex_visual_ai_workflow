@@ -6,7 +6,7 @@ import logging
 from pathlib import Path
 from datetime import datetime
 from filecmp import cmp
-from .utils import emit_status
+from .utils import emit_status, set_status_callback
 
 
 def ensure_dir(path):
@@ -46,7 +46,7 @@ def get_unique_name(dest_dir, original_name, source_prefix, method):
         raise ValueError(f"Unknown rename_scheme: {method}")
 
 
-def collect_images(cfg):
+def collect_images(cfg, db=None):
     sources = cfg["sources"]
     dest_dir = Path(cfg["destination"])
     rename_scheme = cfg.get("rename_scheme", "source_prefix")
@@ -58,6 +58,30 @@ def collect_images(cfg):
     seen_files = set()
     total, copied, renamed, skipped = 0, 0, 0, 0
     emit_status('start', action='collect_images', sources=len(sources))
+
+    if db is not None:
+        db.logActivity({
+            'action': 'collect_images',
+            'details': json.dumps({'config': cfg}),
+            'status': 'running',
+        })
+
+        def _cb(event: str, data: dict) -> None:
+            if event == 'complete':
+                final = {
+                    'total': total,
+                    'copied': copied,
+                    'renamed': renamed,
+                    'skipped': skipped,
+                    'destination': str(dest_dir),
+                }
+                db.logActivity({
+                    'action': 'collect_images_complete',
+                    'details': json.dumps(final),
+                    'status': 'complete',
+                })
+
+        set_status_callback(_cb)
 
     for source in sources:
         source_path = Path(source)
@@ -111,6 +135,8 @@ def collect_images(cfg):
                 emit_status('deleted', file=str(existing_file))
 
     emit_status('complete', action='collect_images', total=total, copied=copied, renamed=renamed, skipped=skipped)
+    if db is not None:
+        set_status_callback(None)
     return {
         'total': total,
         'copied': copied,
@@ -119,7 +145,7 @@ def collect_images(cfg):
     }
 
 
-def run(config_path: str) -> None:
+def run(config_path: str, db=None) -> None:
     """Entry point used by CLI and other callers.
 
     Loads the JSON config, sets up logging, and invokes :func:`collect_images`.
@@ -138,7 +164,7 @@ def run(config_path: str) -> None:
     logging.info(f"Rename scheme: {cfg.get('rename_scheme', 'source_prefix')}")
     logging.info(f"Delete missing in sources: {cfg.get('delete_missing_in_sources', False)}")
 
-    collect_images(cfg)
+    collect_images(cfg, db=db)
 
     logging.info("=== Collection Complete ===")
     print(f"[INFO] Log written to {log_path}")
