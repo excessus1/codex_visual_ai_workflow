@@ -1,7 +1,8 @@
 import Database from "better-sqlite3"
 import path from "path"
 
-const dbPath = path.join(process.cwd(), "data", "workflow.db")
+const dataDir = process.env.DATA_DIR || path.join(process.cwd(), "data")
+const dbPath = process.env.DB_PATH || path.join(dataDir, "workflow.db")
 const db = new Database(dbPath)
 
 // Initialize database schema

@@ -21,7 +21,8 @@ def main():
     with open(config_path, "r") as f:
         cfg = json.load(f)
 
-    log_dir = Path("logs/image_merge")
+    data_dir = Path(os.getenv("DATA_DIR", "."))
+    log_dir = data_dir / "logs" / "image_merge"
     log_path = setup_logger(log_dir)
 
     logging.info("=== Starting Image Collection ===")

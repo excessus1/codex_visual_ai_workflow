@@ -22,12 +22,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid script name" }, { status: 400 })
     }
 
-    const scriptPath = path.join(process.cwd(), "scripts", script)
+    const scriptsDir = process.env.SCRIPTS_DIR || path.join(process.cwd(), "..", "initial", "scripts")
+    const scriptPath = path.join(scriptsDir, script)
 
     // Create temporary config file if config is provided
     let configPath = null
     if (config) {
-      const configDir = path.join(process.cwd(), "temp", "configs")
+      const dataDir = process.env.DATA_DIR || path.join(process.cwd(), "..", "data")
+      const configDir = path.join(dataDir, "temp", "configs")
       await fs.mkdir(configDir, { recursive: true })
       configPath = path.join(configDir, `config_${Date.now()}.json`)
       await fs.writeFile(configPath, JSON.stringify(config, null, 2))
