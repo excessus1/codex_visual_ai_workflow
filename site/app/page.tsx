@@ -1,11 +1,42 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Brain, Camera, Database, FileImage, Play, Settings, Upload, Video, Zap } from "lucide-react"
 import Link from "next/link"
+import { formatDistanceToNow } from "date-fns"
+
+interface ActivityLog {
+  id: number
+  action: string
+  details?: string
+  status?: string
+  timestamp: string
+}
 
 export default function Dashboard() {
+  const [logs, setLogs] = useState<ActivityLog[]>([])
+  const [isLoadingLogs, setIsLoadingLogs] = useState(true)
+
+  useEffect(() => {
+    const fetchLogs = async () => {
+      setIsLoadingLogs(true)
+      try {
+        const res = await fetch("/api/logs?limit=4")
+        const data: ActivityLog[] = await res.json()
+        setLogs(data)
+      } catch (err) {
+        console.error("Failed to fetch logs:", err)
+      } finally {
+        setIsLoadingLogs(false)
+      }
+    }
+    fetchLogs()
+  }, [])
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Header */}
@@ -226,29 +257,53 @@ export default function Dashboard() {
             <CardDescription>Latest workflow actions and system events</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {[
-                { action: "Training started", dataset: "construction_v2", time: "2 minutes ago", status: "running" },
-                { action: "Images collected", count: "247 images", time: "15 minutes ago", status: "completed" },
-                { action: "Prediction completed", model: "yolov8n_custom", time: "1 hour ago", status: "completed" },
-                { action: "Dataset organized", dataset: "vehicles_dataset", time: "2 hours ago", status: "completed" },
-              ].map((item, index) => (
-                <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-2 h-2 rounded-full ${
-                        item.status === "running" ? "bg-green-500 animate-pulse" : "bg-gray-400"
-                      }`}
-                    />
-                    <div>
-                      <p className="font-medium">{item.action}</p>
-                      <p className="text-sm text-muted-foreground">{item.dataset || item.count || item.model}</p>
+            {isLoadingLogs ? (
+              <div className="text-center py-4 text-muted-foreground">Loading...</div>
+            ) : logs.length === 0 ? (
+              <div className="text-center py-4 text-muted-foreground">No recent activity</div>
+            ) : (
+              <div className="space-y-4">
+                {logs.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between p-3 rounded-lg bg-slate-50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-2 h-2 rounded-full ${
+                          item.status === "running"
+                            ? "bg-green-500 animate-pulse"
+                            : item.status === "error"
+                              ? "bg-red-500"
+                              : item.status === "warning"
+                                ? "bg-yellow-500"
+                                : "bg-gray-400"
+                        }`}
+                      />
+                      <div>
+                        <p className="font-medium">{item.action}</p>
+                        {item.details && (
+                          <p className="text-sm text-muted-foreground truncate">
+                            {(() => {
+                              try {
+                                const d = JSON.parse(item.details!)
+                                const first = Object.values(d)[0]
+                                return typeof first === "string" ? first : JSON.stringify(first)
+                              } catch {
+                                return item.details
+                              }
+                            })()}
+                          </p>
+                        )}
+                      </div>
                     </div>
+                    <span className="text-sm text-muted-foreground">
+                      {formatDistanceToNow(new Date(item.timestamp), { addSuffix: true })}
+                    </span>
                   </div>
-                  <span className="text-sm text-muted-foreground">{item.time}</span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

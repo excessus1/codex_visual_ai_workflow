@@ -12,10 +12,8 @@ import Link from "next/link"
 interface LogEntry {
   id: number
   action: string
-  entity_type?: string
-  entity_id?: number
   details?: string
-  status: "success" | "error" | "warning" | "info"
+  status?: string
   timestamp: string
 }
 
@@ -37,55 +35,9 @@ export default function LogsPage() {
   const fetchLogs = async () => {
     setIsLoading(true)
     try {
-      // Simulate API call - replace with actual API
-      const mockLogs: LogEntry[] = [
-        {
-          id: 1,
-          action: "Training started",
-          entity_type: "training",
-          entity_id: 123,
-          details: '{"model": "yolov8n", "dataset": "construction_v2", "epochs": 100}',
-          status: "info",
-          timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-        },
-        {
-          id: 2,
-          action: "Image collection completed",
-          entity_type: "dataset",
-          entity_id: 456,
-          details: '{"source_count": 3, "images_collected": 247, "duplicates_removed": 12}',
-          status: "success",
-          timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-        },
-        {
-          id: 3,
-          action: "Prediction failed",
-          entity_type: "prediction",
-          entity_id: 789,
-          details: '{"error": "Model file not found", "model_path": "/models/custom_v1.pt"}',
-          status: "error",
-          timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-        },
-        {
-          id: 4,
-          action: "Dataset validation warning",
-          entity_type: "dataset",
-          entity_id: 456,
-          details: '{"warning": "Some images have no annotations", "count": 23}',
-          status: "warning",
-          timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-        },
-        {
-          id: 5,
-          action: "Model training completed",
-          entity_type: "training",
-          entity_id: 101,
-          details: '{"final_map": 0.847, "best_epoch": 87, "training_time": "2h 34m"}',
-          status: "success",
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-        },
-      ]
-      setLogs(mockLogs)
+      const res = await fetch("/api/logs")
+      const data: LogEntry[] = await res.json()
+      setLogs(data)
     } catch (error) {
       console.error("Failed to fetch logs:", error)
     } finally {
@@ -226,7 +178,11 @@ export default function LogsPage() {
                 Loading logs...
               </div>
             ) : filteredLogs.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">No logs found matching your criteria</div>
+              <div className="text-center py-8 text-muted-foreground">
+                {searchTerm || statusFilter !== "all"
+                  ? "No logs found matching your criteria"
+                  : "No logs available"}
+              </div>
             ) : (
               <div className="space-y-4">
                 {filteredLogs.map((log) => {
@@ -234,14 +190,9 @@ export default function LogsPage() {
                   return (
                     <div key={log.id} className="border rounded-lg p-4 hover:bg-slate-50 transition-colors">
                       <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3">
                           <Badge className={getStatusColor(log.status)}>{log.status}</Badge>
                           <h3 className="font-medium">{log.action}</h3>
-                          {log.entity_type && (
-                            <Badge variant="outline" className="text-xs">
-                              {log.entity_type}#{log.entity_id}
-                            </Badge>
-                          )}
                         </div>
                         <span className="text-sm text-muted-foreground">{formatTimestamp(log.timestamp)}</span>
                       </div>
